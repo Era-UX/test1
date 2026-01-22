@@ -60,7 +60,6 @@ public class StudentDAO {
 
             int rowsAffected = pstmt.executeUpdate();
 
-            // ВОТ ОНА СВЯЗЬ: Если 0 строк изменено, кидаем исключение
             if (rowsAffected == 0) {
                 throw new StudentNotFoundException("Update failed: Student with ID " + id + " not found!");
             }
@@ -68,7 +67,6 @@ public class StudentDAO {
             System.out.println("Age of student with ID " + id + " updated to " + newAge);
 
         } catch (SQLException | DatabaseConnectionException | StudentNotFoundException e) {
-            // Теперь здесь ловятся ВСЕ ТРИ типа ошибок
             System.out.println("Error: " + e.getMessage());
         }
     }
@@ -84,7 +82,6 @@ public class StudentDAO {
 
             int rowsAffected = pstmt.executeUpdate();
 
-            // ВОТ ОНА СВЯЗЬ: Если удалять некого, кидаем исключение
             if (rowsAffected == 0) {
                 throw new StudentNotFoundException("Delete failed: Student with ID " + id + " not found!");
             }
