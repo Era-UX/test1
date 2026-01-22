@@ -59,11 +59,17 @@ public class StudentDAO {
             pstmt.setInt(2, id);
 
             int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Age of student with ID " + id + " updated to " + newAge);
+
+            // ВОТ ОНА СВЯЗЬ: Если 0 строк изменено, кидаем исключение
+            if (rowsAffected == 0) {
+                throw new StudentNotFoundException("Update failed: Student with ID " + id + " not found!");
             }
-        } catch (SQLException | DatabaseConnectionException e) {
-            System.out.println("Error updating data: " + e.getMessage());
+
+            System.out.println("Age of student with ID " + id + " updated to " + newAge);
+
+        } catch (SQLException | DatabaseConnectionException | StudentNotFoundException e) {
+            // Теперь здесь ловятся ВСЕ ТРИ типа ошибок
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -77,13 +83,16 @@ public class StudentDAO {
             pstmt.setInt(1, id);
 
             int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Student with ID " + id + " successfully deleted.");
-            } else {
-                System.out.println("Student with ID " + id + " not found.");
+
+            // ВОТ ОНА СВЯЗЬ: Если удалять некого, кидаем исключение
+            if (rowsAffected == 0) {
+                throw new StudentNotFoundException("Delete failed: Student with ID " + id + " not found!");
             }
-        } catch (SQLException | DatabaseConnectionException e) {
-            System.out.println("Error deleting data: " + e.getMessage());
+
+            System.out.println("Student with ID " + id + " successfully deleted.");
+
+        } catch (SQLException | DatabaseConnectionException | StudentNotFoundException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 }
