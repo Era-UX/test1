@@ -5,8 +5,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        StudentDAO studentDao = new StudentDAO();
-        TeacherDAO teacherDao = new TeacherDAO();
+        IRepository<Student> studentDao = new StudentDAO();
+        IRepository<Teacher> teacherDao = new TeacherDAO();
 
         while (true) {
             System.out.println("\n===== EDUCATION MANAGEMENT SYSTEM =====");
@@ -37,22 +37,30 @@ public class Main {
                         String name = scanner.nextLine();
                         System.out.print("Enter Age: ");
                         int age = scanner.nextInt();
-                        studentDao.addStudent(new Student(name, age, id));
+
+                        studentDao.add(new Student(name, age, id));
                         break;
+
                     case 2: // READ
-                        studentDao.readStudents();
+                        System.out.println("\n--- List of Students (Processed with Streams) ---");
+                        studentDao.getAll().stream()
+                                .forEach(System.out::println);
                         break;
+
                     case 3: // UPDATE
                         System.out.print("Enter Student ID to update: ");
                         int upId = scanner.nextInt();
                         System.out.print("Enter New Age: ");
                         int newAge = scanner.nextInt();
-                        studentDao.updateStudentAge(upId, newAge);
+
+                        studentDao.update(upId, newAge);
                         break;
+
                     case 4: // DELETE
                         System.out.print("Enter Student ID to delete: ");
                         int delId = scanner.nextInt();
-                        studentDao.deleteStudent(delId);
+
+                        studentDao.delete(delId);
                         break;
                 }
             } else if (mainChoice == 2) {
@@ -77,22 +85,31 @@ public class Main {
                         String subject = scanner.nextLine();
                         System.out.print("Enter Experience Years: ");
                         int exp = scanner.nextInt();
-                        teacherDao.addTeacher(new Teacher(name, age, subject, exp));
+
+                        // Используем новый метод add
+                        teacherDao.add(new Teacher(name, age, subject, exp));
                         break;
-                    case 2: // READ
-                        teacherDao.readTeachers();
+
+                    case 2: // READ (Используем STREAMS для вывода!)
+                        System.out.println("\n--- List of Teachers (Processed with Streams) ---");
+                        teacherDao.getAll().stream()
+                                .forEach(System.out::println);
                         break;
-                    case 3: // UPDATE
-                        System.out.print("Enter Teacher Name to update: ");
-                        String upName = scanner.nextLine();
+
+                    case 3: // UPDATE (Теперь спрашиваем ID!)
+                        System.out.print("Enter Teacher ID to update: ");
+                        int upId = scanner.nextInt();
                         System.out.print("Enter New Experience: ");
                         int newExp = scanner.nextInt();
-                        teacherDao.updateTeacherExperience(upName, newExp);
+
+                        teacherDao.update(upId, newExp);
                         break;
-                    case 4: // DELETE
-                        System.out.print("Enter Teacher Name to delete: ");
-                        String delName = scanner.nextLine();
-                        teacherDao.deleteTeacher(delName);
+
+                    case 4: // DELETE (Теперь спрашиваем ID!)
+                        System.out.print("Enter Teacher ID to delete: ");
+                        int delId = scanner.nextInt();
+
+                        teacherDao.delete(delId);
                         break;
                 }
             }
