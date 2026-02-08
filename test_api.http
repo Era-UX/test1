@@ -1,0 +1,6 @@
+GET http://127.0.0.1:8080/students
+
+###
+
+### Получить всех учителей
+GET http://localhost:8080/teachers
