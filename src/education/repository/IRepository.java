@@ -4,7 +4,7 @@ import education.exception.DatabaseException;
 import education.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
-
+//#2. Abstraction
 public interface IRepository<T> {
     void add(T item) throws DatabaseException;
     List<T> getAll() throws DatabaseException;

@@ -1,7 +1,7 @@
 package education.domain;
 
 public class Student extends Person {
-
+    //2. Encapsulation
     private Student(Builder builder) {
         super(builder.id, builder.name, builder.age);
     }

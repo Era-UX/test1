@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 public class EduServer {
-    // Теперь сервер знает и про студентов, и про учителей
     private IRepository<Student> studentRepo;
     private IRepository<Teacher> teacherRepo;
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -27,7 +26,6 @@ public class EduServer {
             "None"
     );
 
-    // Конструктор теперь принимает ДВА репозитория
     public EduServer(IRepository<Student> studentRepo, IRepository<Teacher> teacherRepo) {
         this.studentRepo = studentRepo;
         this.teacherRepo = teacherRepo;
@@ -36,7 +34,6 @@ public class EduServer {
     public void start() throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", 8080), 0);
 
-        // 1. ПУТЬ ДЛЯ API (ДАННЫЕ)
         server.createContext("/api/data", exchange -> {
             try {
                 List<Student> students = studentRepo.getAll();
@@ -55,7 +52,6 @@ public class EduServer {
             }
         });
 
-        // 2. ПУТЬ ДЛЯ ФРОНТЕНДА (СТАТИКА)
         server.createContext("/", exchange -> {
             String path = exchange.getRequestURI().getPath();
             if (path.equals("/")) path = "/index.html";
@@ -81,11 +77,9 @@ public class EduServer {
             }
         });
 
-        // 3. НОВЫЙ ПУТЬ ДЛЯ УДАЛЕНИЯ (DELETE)
         server.createContext("/api/delete", exchange -> {
             if ("DELETE".equalsIgnoreCase(exchange.getRequestMethod())) {
                 try {
-                    // Разбираем запрос: /api/delete?type=student&id=5
                     String query = exchange.getRequestURI().getQuery();
                     Map<String, String> params = new HashMap<>();
                     for (String param : query.split("&")) {
@@ -96,48 +90,39 @@ public class EduServer {
                     String type = params.get("type");
                     int id = Integer.parseInt(params.get("id"));
 
-                    // Удаляем из базы
                     if ("student".equals(type)) {
                         studentRepo.delete(id);
                     } else if ("teacher".equals(type)) {
                         teacherRepo.delete(id);
                     }
 
-                    // Отправляем ОК (200)
                     sendResponse(exchange, 200, "{\"status\":\"deleted\"}", "application/json");
 
                 } catch (Exception e) {
                     sendResponse(exchange, 400, "{\"error\":\"" + e.getMessage() + "\"}", "application/json");
                 }
             } else {
-                // Если пришел не DELETE запрос
                 sendResponse(exchange, 405, "{\"error\":\"Method Not Allowed\"}", "application/json");
             }
         });
 
-        // 4. ПУТЬ ДЛЯ СОЗДАНИЯ (CREATE)
         server.createContext("/api/create", exchange -> {
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 try {
-                    // Читаем JSON, который прислал браузер
                     java.io.InputStream is = exchange.getRequestBody();
                     String body = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
 
-                    // Превращаем JSON в Map (универсальный объект)
                     Map<String, Object> data = gson.fromJson(body, Map.class);
                     String type = (String) data.get("type");
                     String name = (String) data.get("name");
 
                     if ("student".equals(type)) {
-                        // Числа в JSON приходят как Double, приводим к int
                         int age = ((Double) data.get("age")).intValue();
-                        // ID база даст сама (0)
                         studentRepo.add(new Student.Builder().setName(name).setAge(age).build());
                     }
                     else if ("teacher".equals(type)) {
                         int exp = ((Double) data.get("experience")).intValue();
                         String subject = (String) data.get("subject");
-                        // Возраст для учителя пока дефолтный (или добавь поле в форму)
                         teacherRepo.add(new Teacher.Builder()
                                 .setName(name).setAge(35).setSubject(subject).setExperience(exp).build());
                     }
@@ -145,7 +130,7 @@ public class EduServer {
                     sendResponse(exchange, 201, "{\"status\":\"created\"}", "application/json");
 
                 } catch (Exception e) {
-                    e.printStackTrace(); // Покажет ошибку в консоли
+                    e.printStackTrace();
                     sendResponse(exchange, 400, "{\"error\":\"" + e.getMessage() + "\"}", "application/json");
                 }
             } else {
@@ -153,7 +138,6 @@ public class EduServer {
             }
         });
 
-        // 5. ПУТЬ ДЛЯ ОБНОВЛЕНИЯ (UPDATE)
         server.createContext("/api/update", exchange -> {
             if ("PUT".equalsIgnoreCase(exchange.getRequestMethod())) {
                 try {
@@ -163,14 +147,14 @@ public class EduServer {
                     Map<String, Object> data = gson.fromJson(body, Map.class);
 
                     String type = (String) data.get("type");
-                    int id = ((Double) data.get("id")).intValue(); // Gson парсит числа как Double
+                    int id = ((Double) data.get("id")).intValue();
 
                     if ("student".equals(type)) {
                         int newAge = ((Double) data.get("age")).intValue();
-                        studentRepo.update(id, newAge); // Обновляем возраст
+                        studentRepo.update(id, newAge);
                     } else if ("teacher".equals(type)) {
                         int newExp = ((Double) data.get("experience")).intValue();
-                        teacherRepo.update(id, newExp); // Обновляем опыт
+                        teacherRepo.update(id, newExp);
                     }
 
                     sendResponse(exchange, 200, "{\"status\":\"updated\"}", "application/json");

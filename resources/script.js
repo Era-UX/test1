@@ -1,5 +1,4 @@
 let modalInstance = null;
-// Глобальные переменные
 let allStudents = [];
 let allTeachers = [];
 
@@ -8,21 +7,16 @@ async function loadDashboardData() {
         const response = await fetch('/api/data');
         const data = await response.json();
 
-        // 1. Сохраняем студентов
         allStudents = data.students;
-        // 2. Раздаем им "Красивые ID" по порядку (1, 2, 3...)
-        // Эти номера "прилипнут" к студентам
         allStudents.forEach((s, index) => {
             s.fakeId = index + 1;
         });
 
-        // То же самое для учителей
         allTeachers = data.teachers;
         allTeachers.forEach((t, index) => {
             t.fakeId = index + 1;
         });
 
-        // Обновляем статистику (остальной код тот же)
         document.getElementById('uni-name').innerText = data.institution.name;
         document.getElementById('uni-address').innerText = data.institution.address;
         document.getElementById('stat-students').innerText = data.institution.totalStudents;
@@ -35,25 +29,21 @@ async function loadDashboardData() {
         console.error("Error:", error);
     }
 }
-
-// 2. ФУНКЦИЯ ПОИСКА (Фильтрация)
+//#3. DataPool
 function handleSearch() {
     const query = document.getElementById('searchInput').value.toLowerCase();
 
-    // Фильтруем студентов (по имени или ID)
     const filteredStudents = allStudents.filter(s =>
         s.name.toLowerCase().includes(query) ||
         s.id.toString().includes(query)
     );
 
-    // Фильтруем учителей (по имени, предмету или ID)
     const filteredTeachers = allTeachers.filter(t =>
         t.name.toLowerCase().includes(query) ||
         t.subject.toLowerCase().includes(query) ||
         t.id.toString().includes(query)
     );
 
-    // Перерисовываем таблицы с отфильтрованными данными
     renderStudents(filteredStudents);
     renderTeachers(filteredTeachers);
 }
@@ -105,32 +95,25 @@ function renderTeachers(teachers) {
     });
 }
 
-// 3. ОТКРЫТИЕ МОДАЛКИ (Для Создания или Редактирования)
 function openEditModal(type, id = null, name = '', age = 18, subject = '', exp = 1) {
-    // Заполняем скрытое поле ID. Если ID есть - это редактирование.
     document.getElementById('editId').value = id ? id : '';
 
-    // Заполняем поля формы
     document.getElementById('inputType').value = type;
     document.getElementById('inputName').value = name;
     document.getElementById('inputAge').value = age;
     document.getElementById('inputSubject').value = subject;
     document.getElementById('inputExp').value = exp;
 
-    // Блокируем смену типа и имя при редактировании (так как в DAO обновляем только возраст/опыт)
     document.getElementById('inputType').disabled = !!id;
     document.getElementById('inputName').disabled = !!id;
 
-    // Показываем нужные поля
     toggleFields();
 
-    // Открываем модалку через Bootstrap
     const modalEl = document.getElementById('addModal');
     modalInstance = new bootstrap.Modal(modalEl);
     modalInstance.show();
 }
 
-// 4. УПРАВЛЕНИЕ ПОЛЯМИ
 function toggleFields() {
     const type = document.getElementById('inputType').value;
     if (type === 'student') {
@@ -142,9 +125,8 @@ function toggleFields() {
     }
 }
 
-// 5. ОТПРАВКА ДАННЫХ (CREATE или UPDATE)
 async function submitCreate() {
-    const id = document.getElementById('editId').value; // Проверяем, есть ли ID
+    const id = document.getElementById('editId').value;
     const type = document.getElementById('inputType').value;
 
     const payload = {
@@ -158,11 +140,10 @@ async function submitCreate() {
     let url = '/api/create';
     let method = 'POST';
 
-    // Если ID существует, значит мы ОБНОВЛЯЕМ (UPDATE)
     if (id) {
         url = '/api/update';
         method = 'PUT';
-        payload.id = parseInt(id); // Добавляем ID в запрос
+        payload.id = parseInt(id);
     }
 
     try {
@@ -173,10 +154,9 @@ async function submitCreate() {
         });
 
         if (response.ok) {
-            modalInstance.hide(); // Закрываем окно
-            loadDashboardData();  // Обновляем таблицу
+            modalInstance.hide();
+            loadDashboardData();
 
-            // Чистим форму для следующего раза
             document.getElementById('addForm').reset();
             document.getElementById('editId').value = '';
         } else {
@@ -195,33 +175,23 @@ async function deleteEntity(type, id) {
     loadDashboardData();
 }
 
-// Привязываем открытие пустой модалки к кнопке "+ Add Person"
-// Нам нужно найти кнопку в HTML и добавить ей onclick="openEditModal('student')"
-// Или просто добавить слушатель здесь:
 document.addEventListener('DOMContentLoaded', () => {
     loadDashboardData();
-    // Находим кнопку Add и вешаем обработчик для "чистого" создания
     const addBtn = document.querySelector('.btn-success');
     addBtn.onclick = () => openEditModal('student');
 });
 
-// Переменные для направления сортировки (1 - по возрастанию, -1 - по убыванию)
 let dirStudent = 1;
 let dirTeacher = 1;
 
-// СОРТИРОВКА СТУДЕНТОВ
 function sortStudents(field) {
     dirStudent *= -1;
 
-    // Обновляем стрелочки в заголовке студентов
     const headers = document.querySelectorAll('#students-header th');
     headers.forEach(th => {
-        // Убираем старые стрелки, оставляем чистый текст
         th.innerHTML = th.innerHTML.replace(' ↑', '').replace(' ↓', '').replace(' ↕', '');
-        // Добавляем нейтральную ↕ всем, кроме текущего поля
     });
 
-    // Добавляем активную стрелку текущему полю
     const currentTh = event.currentTarget;
     currentTh.innerHTML += dirStudent === 1 ? ' ↑' : ' ↓';
 
@@ -239,11 +209,9 @@ function sortStudents(field) {
     handleSearch();
 }
 
-// СОРТИРОВКА УЧИТЕЛЕЙ
 function sortTeachers(field) {
     dirTeacher *= -1;
 
-    // Обновляем стрелочки в заголовке учителей
     const headers = document.querySelectorAll('#teachers-header th');
     headers.forEach(th => {
         th.innerHTML = th.innerHTML.replace(' ↑', '').replace(' ↓', '').replace(' ↕', '');

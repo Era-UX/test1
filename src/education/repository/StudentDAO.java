@@ -18,8 +18,6 @@ public class StudentDAO implements IRepository<Student> {
 
     @Override
     public void add(Student s) throws DatabaseException {
-        // Мы не добавляем ID (он SERIAL), и пока не добавляем teacher_id через форму,
-        // но база сама поставит NULL, если мы его не укажем.
         String sql = "INSERT INTO students (name, age) VALUES (?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -34,7 +32,6 @@ public class StudentDAO implements IRepository<Student> {
     @Override
     public List<Student> getAll() throws DatabaseException {
         List<Student> students = new ArrayList<>();
-        // ИЗМЕНЕНИЕ: Используем JOIN, чтобы достать имя учителя (куратора)
         String sql = "SELECT s.*, t.name as curator_name " +
                 "FROM students s " +
                 "LEFT JOIN teachers t ON s.teacher_id = t.id " +
@@ -50,9 +47,7 @@ public class StudentDAO implements IRepository<Student> {
                         .setAge(rs.getInt("age"))
                         .build();
 
-                // Достаем имя куратора из результата JOIN
                 String curatorName = rs.getString("curator_name");
-                // Убедись, что в классе Student есть поле teacherName и сеттер для него
                 student.setTeacherName(curatorName != null ? curatorName : "None");
 
                 students.add(student);
@@ -65,7 +60,6 @@ public class StudentDAO implements IRepository<Student> {
 
     @Override
     public void update(int id, int newValue) throws DatabaseException, EntityNotFoundException {
-        // Оставляем как есть, если обновляем только возраст
         String sql = "UPDATE students SET age = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -95,7 +89,6 @@ public class StudentDAO implements IRepository<Student> {
 
     @Override
     public Optional<Student> findById(int id) throws DatabaseException {
-        // Здесь тоже добавим JOIN на случай, если будем искать одного студента
         String sql = "SELECT s.*, t.name as curator_name " +
                 "FROM students s " +
                 "LEFT JOIN teachers t ON s.teacher_id = t.id " +

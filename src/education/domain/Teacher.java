@@ -4,7 +4,6 @@ public class Teacher extends Person {
     private String subject;
     private int experience;
 
-    // Приватный конструктор для Билдера
     private Teacher(Builder builder) {
         super(builder.id, builder.name, builder.age);
         this.subject = builder.subject;
@@ -25,7 +24,6 @@ public class Teacher extends Person {
                 super.toString(), subject, experience);
     }
 
-    // --- BUILDER PATTERN ---
     public static class Builder {
         private int id;
         private String name;

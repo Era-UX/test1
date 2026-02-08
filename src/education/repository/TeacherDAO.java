@@ -55,7 +55,6 @@ public class TeacherDAO implements IRepository<Teacher> {
 
     @Override
     public void update(int id, int newExperience) throws DatabaseException, EntityNotFoundException {
-        // Обновляем опыт работы, например
         String sql = "UPDATE teachers SET experience = ? WHERE id = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
